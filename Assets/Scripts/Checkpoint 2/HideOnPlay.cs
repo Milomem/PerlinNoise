@@ -3,13 +3,14 @@ using System.Collections;
 
 public class HideOnPlay : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-		gameObject.SetActive (false);
+	// Usado para inicialização
+	void Start() {
+		// Desativa o objeto quando o jogo começa
+		gameObject.SetActive(false);
 	}
 	
-	// Update is called once per frame
-	void Update () {
-	
+	// Atualização é chamada uma vez por frame
+	void Update() {
+		// Nenhuma operação necessária na atualização
 	}
 }

@@ -28,6 +28,7 @@ public class TerrainChunk {
 	MeshSettings meshSettings;
 	Transform viewer;
 
+	// Construtor para inicializar o TerrainChunk
 	public TerrainChunk(Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels, int colliderLODIndex, Transform parent, Transform viewer, Material material) {
 		this.coord = coord;
 		this.detailLevels = detailLevels;
@@ -37,9 +38,8 @@ public class TerrainChunk {
 		this.viewer = viewer;
 
 		sampleCentre = coord * meshSettings.meshWorldSize / meshSettings.meshScale;
-		Vector2 position = coord * meshSettings.meshWorldSize ;
-		bounds = new Bounds(position,Vector2.one * meshSettings.meshWorldSize );
-
+		Vector2 position = coord * meshSettings.meshWorldSize;
+		bounds = new Bounds(position, Vector2.one * meshSettings.meshWorldSize);
 
 		meshObject = new GameObject("Terrain Chunk");
 		meshRenderer = meshObject.AddComponent<MeshRenderer>();
@@ -47,7 +47,7 @@ public class TerrainChunk {
 		meshCollider = meshObject.AddComponent<MeshCollider>();
 		meshRenderer.material = material;
 
-		meshObject.transform.position = new Vector3(position.x,0,position.y);
+		meshObject.transform.position = new Vector3(position.x, 0, position.y);
 		meshObject.transform.parent = parent;
 		SetVisible(false);
 
@@ -60,42 +60,42 @@ public class TerrainChunk {
 			}
 		}
 
-		maxViewDst = detailLevels [detailLevels.Length - 1].visibleDstThreshold;
-
+		maxViewDst = detailLevels[detailLevels.Length - 1].visibleDstThreshold;
 	}
 
+	// Carrega o mapa de altura
 	public void Load() {
-		ThreadedDataRequester.RequestData(() => HeightMapGenerator.GenerateHeightMap (meshSettings.numVertsPerLine, meshSettings.numVertsPerLine, heightMapSettings, sampleCentre), OnHeightMapReceived);
+		ThreadedDataRequester.RequestData(() => HeightMapGenerator.GenerateHeightMap(meshSettings.numVertsPerLine, meshSettings.numVertsPerLine, heightMapSettings, sampleCentre), OnHeightMapReceived);
 	}
 
-
-
+	// Callback chamado quando o mapa de altura é recebido
 	void OnHeightMapReceived(object heightMapObject) {
 		this.heightMap = (HeightMap)heightMapObject;
 		heightMapReceived = true;
 
-		UpdateTerrainChunk ();
+		UpdateTerrainChunk();
 	}
 
+	// Propriedade para obter a posição do viewer
 	Vector2 viewerPosition {
 		get {
-			return new Vector2 (viewer.position.x, viewer.position.z);
+			return new Vector2(viewer.position.x, viewer.position.z);
 		}
 	}
 
-
+	// Atualiza o TerrainChunk
 	public void UpdateTerrainChunk() {
 		if (heightMapReceived) {
-			float viewerDstFromNearestEdge = Mathf.Sqrt (bounds.SqrDistance (viewerPosition));
+			float viewerDstFromNearestEdge = Mathf.Sqrt(bounds.SqrDistance(viewerPosition));
 
-			bool wasVisible = IsVisible ();
+			bool wasVisible = IsVisible();
 			bool visible = viewerDstFromNearestEdge <= maxViewDst;
 
 			if (visible) {
 				int lodIndex = 0;
 
 				for (int i = 0; i < detailLevels.Length - 1; i++) {
-					if (viewerDstFromNearestEdge > detailLevels [i].visibleDstThreshold) {
+					if (viewerDstFromNearestEdge > detailLevels[i].visibleDstThreshold) {
 						lodIndex = i + 1;
 					} else {
 						break;
@@ -103,57 +103,57 @@ public class TerrainChunk {
 				}
 
 				if (lodIndex != previousLODIndex) {
-					LODMesh lodMesh = lodMeshes [lodIndex];
+					LODMesh lodMesh = lodMeshes[lodIndex];
 					if (lodMesh.hasMesh) {
 						previousLODIndex = lodIndex;
 						meshFilter.mesh = lodMesh.mesh;
 					} else if (!lodMesh.hasRequestedMesh) {
-						lodMesh.RequestMesh (heightMap, meshSettings);
+						lodMesh.RequestMesh(heightMap, meshSettings);
 					}
 				}
-
-
 			}
 
 			if (wasVisible != visible) {
-				
-				SetVisible (visible);
+				SetVisible(visible);
 				if (onVisibilityChanged != null) {
-					onVisibilityChanged (this, visible);
+					onVisibilityChanged(this, visible);
 				}
 			}
 		}
 	}
 
+	// Atualiza a malha de colisão
 	public void UpdateCollisionMesh() {
 		if (!hasSetCollider) {
-			float sqrDstFromViewerToEdge = bounds.SqrDistance (viewerPosition);
+			float sqrDstFromViewerToEdge = bounds.SqrDistance(viewerPosition);
 
-			if (sqrDstFromViewerToEdge < detailLevels [colliderLODIndex].sqrVisibleDstThreshold) {
-				if (!lodMeshes [colliderLODIndex].hasRequestedMesh) {
-					lodMeshes [colliderLODIndex].RequestMesh (heightMap, meshSettings);
+			if (sqrDstFromViewerToEdge < detailLevels[colliderLODIndex].sqrVisibleDstThreshold) {
+				if (!lodMeshes[colliderLODIndex].hasRequestedMesh) {
+					lodMeshes[colliderLODIndex].RequestMesh(heightMap, meshSettings);
 				}
 			}
 
 			if (sqrDstFromViewerToEdge < colliderGenerationDistanceThreshold * colliderGenerationDistanceThreshold) {
-				if (lodMeshes [colliderLODIndex].hasMesh) {
-					meshCollider.sharedMesh = lodMeshes [colliderLODIndex].mesh;
+				if (lodMeshes[colliderLODIndex].hasMesh) {
+					meshCollider.sharedMesh = lodMeshes[colliderLODIndex].mesh;
 					hasSetCollider = true;
 				}
 			}
 		}
 	}
 
+	// Define a visibilidade do TerrainChunk
 	public void SetVisible(bool visible) {
-		meshObject.SetActive (visible);
+		meshObject.SetActive(visible);
 	}
 
+	// Verifica se o TerrainChunk está visível
 	public bool IsVisible() {
 		return meshObject.activeSelf;
 	}
-
 }
 
+// Classe que representa uma malha de LOD
 class LODMesh {
 
 	public Mesh mesh;
@@ -162,20 +162,22 @@ class LODMesh {
 	int lod;
 	public event System.Action updateCallback;
 
+	// Construtor para inicializar a malha de LOD
 	public LODMesh(int lod) {
 		this.lod = lod;
 	}
 
+	// Callback chamado quando os dados da malha são recebidos
 	void OnMeshDataReceived(object meshDataObject) {
-		mesh = ((MeshData)meshDataObject).CreateMesh ();
+		mesh = ((MeshData)meshDataObject).CreateMesh();
 		hasMesh = true;
 
-		updateCallback ();
+		updateCallback();
 	}
 
+	// Solicita a geração da malha
 	public void RequestMesh(HeightMap heightMap, MeshSettings meshSettings) {
 		hasRequestedMesh = true;
-		ThreadedDataRequester.RequestData (() => MeshGenerator.GenerateTerrainMesh (heightMap.values, meshSettings, lod), OnMeshDataReceived);
+		ThreadedDataRequester.RequestData(() => MeshGenerator.GenerateTerrainMesh(heightMap.values, meshSettings, lod), OnMeshDataReceived);
 	}
-
 }
