@@ -99,7 +99,7 @@ public class CaveMeshGenerator : MonoBehaviour {
 			Destroy(currentColliders[i]);
 		}
 
-		CalculateMeshOutlines ();
+		CalculateMeshOutlines();
 
 		foreach (List<int> outline in outlines) {
 			EdgeCollider2D edgeCollider = gameObject.AddComponent<EdgeCollider2D>();
