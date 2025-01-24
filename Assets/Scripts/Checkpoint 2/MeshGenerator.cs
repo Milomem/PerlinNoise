@@ -47,7 +47,7 @@ public static class MeshGenerator {
 					Vector2 vertexPosition2D = topLeft + new Vector2(percent.x, -percent.y) * meshSettings.meshWorldSize;
 					float height = heightMap[x, y];
 
-					if (caveMap[x, y] == 1) {
+					if (x < caveMap.GetLength(0) && y < caveMap.GetLength(1) && caveMap[x, y] == 1) {
 						// Ajuste a altura do vértice para criar cavernas
 						height = 0;
 					}
