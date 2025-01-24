@@ -27,10 +27,12 @@ public class MapPreview : MonoBehaviour {
 		textureData.UpdateMeshHeights(terrainMaterial, heightMapSettings.minHeight, heightMapSettings.maxHeight);
 		HeightMap heightMap = HeightMapGenerator.GenerateHeightMap(meshSettings.numVertsPerLine, meshSettings.numVertsPerLine, heightMapSettings, Vector2.zero);
 
+		int[,] caveMap = new int[meshSettings.numVertsPerLine, meshSettings.numVertsPerLine]; // Mapa de cavernas vazio
+
 		if (drawMode == DrawMode.NoiseMap) {
 			DrawTexture(TextureGenerator.TextureFromHeightMap(heightMap));
 		} else if (drawMode == DrawMode.Mesh) {
-			DrawMesh(MeshGenerator.GenerateTerrainMesh(heightMap.values, meshSettings, editorPreviewLOD));
+			DrawMesh(MeshGenerator.GenerateTerrainMesh(heightMap.values, meshSettings, editorPreviewLOD, caveMap));
 		} else if (drawMode == DrawMode.FalloffMap) {
 			DrawTexture(TextureGenerator.TextureFromHeightMap(new HeightMap(FalloffGenerator.GenerateFalloffMap(meshSettings.numVertsPerLine), 0, 1)));
 		}

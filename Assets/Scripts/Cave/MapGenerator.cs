@@ -340,6 +340,10 @@ public class MapGenerator : MonoBehaviour {
 		return wallCount;
 	}
 
+	public int[,] GetMap() {
+		return map;
+	}
+
 	struct Coord {
 		public int tileX;
 		public int tileY;

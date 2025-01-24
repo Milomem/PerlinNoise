@@ -17,6 +17,8 @@ public class TerrainGenerator : MonoBehaviour {
 	public Transform viewer;
 	public Material mapMaterial;
 
+	public MapGenerator mapGenerator; // Adicione uma referência ao MapGenerator
+
 	Vector2 viewerPosition;
 	Vector2 viewerPositionOld;
 
@@ -72,7 +74,18 @@ public class TerrainGenerator : MonoBehaviour {
 					if (terrainChunkDictionary.ContainsKey(viewedChunkCoord)) {
 						terrainChunkDictionary[viewedChunkCoord].UpdateTerrainChunk();
 					} else {
-						TerrainChunk newChunk = new TerrainChunk(viewedChunkCoord, heightMapSettings, meshSettings, detailLevels, colliderLODIndex, transform, viewer, mapMaterial);
+						// Gere o mapa de cavernas para este chunk
+						mapGenerator.GenerateMap();
+						int[,] caveMap = mapGenerator.GetMap();
+
+						 // Certifique-se de que o caveMap tenha o mesmo tamanho que o heightMap
+						int size = meshSettings.numVertsPerLine;
+						if (caveMap.GetLength(0) != size || caveMap.GetLength(1) != size) {
+							caveMap = new int[size, size];
+						}
+
+						// Crie um novo chunk de terreno com o mapa de cavernas
+						TerrainChunk newChunk = new TerrainChunk(viewedChunkCoord, heightMapSettings, meshSettings, detailLevels, colliderLODIndex, transform, viewer, mapMaterial, caveMap);
 						terrainChunkDictionary.Add(viewedChunkCoord, newChunk);
 						newChunk.onVisibilityChanged += OnTerrainChunkVisibilityChanged;
 						newChunk.Load();

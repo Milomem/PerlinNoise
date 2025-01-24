@@ -28,14 +28,17 @@ public class TerrainChunk {
 	MeshSettings meshSettings;
 	Transform viewer;
 
+	int[,] caveMap;
+
 	// Construtor para inicializar o TerrainChunk
-	public TerrainChunk(Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels, int colliderLODIndex, Transform parent, Transform viewer, Material material) {
+	public TerrainChunk(Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels, int colliderLODIndex, Transform parent, Transform viewer, Material material, int[,] caveMap) {
 		this.coord = coord;
 		this.detailLevels = detailLevels;
 		this.colliderLODIndex = colliderLODIndex;
 		this.heightMapSettings = heightMapSettings;
 		this.meshSettings = meshSettings;
 		this.viewer = viewer;
+		this.caveMap = caveMap;
 
 		sampleCentre = coord * meshSettings.meshWorldSize / meshSettings.meshScale;
 		Vector2 position = coord * meshSettings.meshWorldSize;
@@ -108,7 +111,7 @@ public class TerrainChunk {
 						previousLODIndex = lodIndex;
 						meshFilter.mesh = lodMesh.mesh;
 					} else if (!lodMesh.hasRequestedMesh) {
-						lodMesh.RequestMesh(heightMap, meshSettings);
+						lodMesh.RequestMesh(heightMap, meshSettings, caveMap); // Passe o caveMap aqui
 					}
 				}
 			}
@@ -129,7 +132,7 @@ public class TerrainChunk {
 
 			if (sqrDstFromViewerToEdge < detailLevels[colliderLODIndex].sqrVisibleDstThreshold) {
 				if (!lodMeshes[colliderLODIndex].hasRequestedMesh) {
-					lodMeshes[colliderLODIndex].RequestMesh(heightMap, meshSettings);
+					lodMeshes[colliderLODIndex].RequestMesh(heightMap, meshSettings, caveMap); // Passe o caveMap aqui
 				}
 			}
 
@@ -176,8 +179,8 @@ class LODMesh {
 	}
 
 	// Solicita a geração da malha
-	public void RequestMesh(HeightMap heightMap, MeshSettings meshSettings) {
+	public void RequestMesh(HeightMap heightMap, MeshSettings meshSettings, int[,] caveMap) {
 		hasRequestedMesh = true;
-		ThreadedDataRequester.RequestData(() => MeshGenerator.GenerateTerrainMesh(heightMap.values, meshSettings, lod), OnMeshDataReceived);
+		ThreadedDataRequester.RequestData(() => MeshGenerator.GenerateTerrainMesh(heightMap.values, meshSettings, lod, caveMap), OnMeshDataReceived);
 	}
 }

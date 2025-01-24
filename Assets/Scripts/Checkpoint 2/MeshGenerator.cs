@@ -4,7 +4,7 @@ using System.Collections;
 public static class MeshGenerator {
 
 	// Gera a malha do terreno com base no mapa de altura e configurações fornecidas
-	public static MeshData GenerateTerrainMesh(float[,] heightMap, MeshSettings meshSettings, int levelOfDetail) {
+	public static MeshData GenerateTerrainMesh(float[,] heightMap, MeshSettings meshSettings, int levelOfDetail, int[,] caveMap) {
 		int skipIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2;
 		int numVertsPerLine = meshSettings.numVertsPerLine;
 
@@ -46,6 +46,11 @@ public static class MeshGenerator {
 					Vector2 percent = new Vector2(x - 1, y - 1) / (numVertsPerLine - 3);
 					Vector2 vertexPosition2D = topLeft + new Vector2(percent.x, -percent.y) * meshSettings.meshWorldSize;
 					float height = heightMap[x, y];
+
+					if (caveMap[x, y] == 1) {
+						// Ajuste a altura do vértice para criar cavernas
+						height = 0;
+					}
 
 					if (isEdgeConnectionVertex) {
 						bool isVertical = x == 2 || x == numVertsPerLine - 3;
